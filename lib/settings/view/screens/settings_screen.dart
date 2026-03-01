@@ -1,5 +1,5 @@
 import 'package:expence_tracker/auth/controller/auth_provider.dart';
-import 'package:expence_tracker/auth/view/screens/login_screen.dart';
+import 'package:expence_tracker/auth/screens/auth_screen.dart';
 import 'package:expence_tracker/settings/view/screens/categories_screen.dart';
 import 'package:expence_tracker/settings/view/screens/sync_screen.dart';
 import 'package:expence_tracker/shared/controller/theme_provider.dart';
@@ -78,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                   await Provider.of<FirebaseProvider>(context, listen: false).clearLocalDatabase();
                   if (context.mounted) {
                     Provider.of<AuthProvider>(context, listen: false).signOut();
-                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const AuthScreen()), (route) => false);
                   }
                 },
                 child: const Text(

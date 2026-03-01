@@ -4,9 +4,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../shared/data/shared_pref_data.dart';
 
+enum AuthMode { login, signup, forgotPassword, resetPassword }
+
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  AuthMode _currentMode = AuthMode.login;
+  AuthMode get currentMode => _currentMode;
+
+  void switchMode(AuthMode mode) {
+    _currentMode = mode;
+    notifyListeners();
+  }
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;

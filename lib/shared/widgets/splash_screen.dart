@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:expence_tracker/auth/view/screens/login_screen.dart';
+import 'package:expence_tracker/auth/screens/auth_screen.dart';
 import '../../transections/view/screens/home_screen.dart';
 import '../data/shared_pref_data.dart';
 
@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (AppPref.getIsLogin()) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
     }
   }
 
