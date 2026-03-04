@@ -25,7 +25,7 @@ class _ExpenseScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: Drawer(child: _buildFilterDrawer(context)),
       appBar: AppBar(
         title: const Text("Transactions"),

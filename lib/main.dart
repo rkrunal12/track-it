@@ -18,7 +18,7 @@ Future<void> main() async {
 
   await AppPref.init();
 
-  runApp(DevicePreview(enabled: kDebugMode, builder: (context) => const MyApp()));
+  runApp(DevicePreview(enabled: false, builder: (context) => const MyApp()));
   // runApp(const MyApp());
 }
 

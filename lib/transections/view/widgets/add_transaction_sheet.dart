@@ -22,6 +22,19 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final TextEditingController _noteController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Initialize default payment method if not set
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final transactionProvider = Provider.of<TransactionProvider>(context, listen: false);
+      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      if (transactionProvider.selectedPaymentMethod == null && settingsProvider.paymentMethods.isNotEmpty) {
+        transactionProvider.setPaymentMethod(settingsProvider.paymentMethods.first);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
@@ -162,15 +175,50 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
               const SizedBox(height: 20),
 
-              // Amount Entry Section
+              // Amount Entry Section (Visual display for amount)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: CustomTextField(
-                  controller: _amountController,
-                  hintText: "0",
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  // Custom styling for amount is better handled by style if AppTextField supported it,
-                  // but for now we follow the "one widget" rule.
+                child: Column(
+                  children: [
+                    Text(
+                      "Amount",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withAlpha(150),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          "₹",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: transactionProvider.typeOfTransaction == 0 ? const Color(0xFFFF5252) : const Color(0xFF00E676),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _amountController.text,
+                              style: TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                color: transactionProvider.typeOfTransaction == 0 ? const Color(0xFFFF5252) : const Color(0xFF00E676),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
 
@@ -203,6 +251,67 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               ),
 
               const SizedBox(height: 10),
+
+              // Payment Method Selector
+              Visibility(
+                visible: transactionProvider.typeOfTransaction == 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, bottom: 8),
+                        child: Text(
+                          "Payment Method",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).textTheme.bodySmall?.color?.withAlpha(180),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 45,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: settingsProvider.paymentMethods.length,
+                          itemBuilder: (context, index) {
+                            final method = settingsProvider.paymentMethods[index];
+                            final isSelected = transactionProvider.selectedPaymentMethod == method;
+                            return GestureDetector(
+                              onTap: () => transactionProvider.setPaymentMethod(method),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: const EdgeInsets.only(right: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyLarge?.color?.withAlpha(15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: isSelected ? Colors.white.withAlpha(50) : Colors.transparent),
+                                ),
+                                child: Text(
+                                  method,
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? (Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white)
+                                        : Theme.of(context).textTheme.bodyMedium?.color,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
 
               // Custom Numpad
               Expanded(
@@ -317,7 +426,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
     if (amountText == "0" || amountText.isEmpty || transactionProvider.selectedCategory == null) return;
 
-    transactionProvider.setPaymentMethod("Cash");
+    final selectedMethod = transactionProvider.selectedPaymentMethod ?? "Cash";
 
     transactionProvider.addTransaction(
       ExpenseModel(
@@ -326,7 +435,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
         date: DateTime.now(),
         type: transactionProvider.typeOfTransaction == 0 ? "expense" : "income",
         category: transactionProvider.selectedCategory,
-        paymentMethod: "Cash",
+        paymentMethod: selectedMethod,
         note: noteText,
       ),
     );
